@@ -1,0 +1,22 @@
+const jwt = require('jsonwebtoken');
+
+// 🔐 يتأكد إن فيه token صحيح قبل ما يسمح بالدخول للـ route
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: '🚫 لازم تسجل دخول الأول' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // { id, name, email }
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: '⛔ الـ token غير صالح أو منتهي' });
+  }
+}
+
+module.exports = authMiddleware;
